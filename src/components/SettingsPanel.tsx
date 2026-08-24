@@ -10,6 +10,18 @@ interface Props {
 
 const QUOTES = ['USDT', 'USDC', 'BTC', 'ETH']
 
+// Что биржа умеет: спот, бессрочные фьючерсы, ставки funding. Признаки независимы —
+// BigONE, например, даёт фьючерсы, но не отдаёт funding.
+function capsLabel(ex: ExchangeInfo): string {
+  const caps: string[] = []
+  if (ex.has_spot) caps.push('спот')
+  if (ex.has_perp) caps.push('фьюч')
+  if (ex.has_funding) caps.push('funding')
+  if (caps.length === 0) return 'нет данных'
+  if (caps.length === 1 && ex.has_spot) return 'только спот'
+  return caps.join('+')
+}
+
 // Разбираем строку с парами/базами: разделители — запятая, пробел, перевод строки.
 function parseList(raw: string): string[] {
   return Array.from(
@@ -80,9 +92,7 @@ export function SettingsPanel({ settings, exchanges, universeSize, onSave }: Pro
                 onClick={() => toggleExchange(ex.id)}
               >
                 <span className="ex-chip__name">{ex.name}</span>
-                <span className="ex-chip__tags">
-                  {ex.has_funding ? 'спот+фьюч' : 'только спот'}
-                </span>
+                <span className="ex-chip__tags">{capsLabel(ex)}</span>
               </button>
             )
           })}

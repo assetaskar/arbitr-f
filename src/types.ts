@@ -75,5 +75,6 @@ export interface ExchangeInfo {
   id: string
   name: string
   has_spot: boolean
+  has_perp: boolean
   has_funding: boolean
 }
