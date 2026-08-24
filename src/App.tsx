@@ -6,9 +6,10 @@ import {
   storeSettings,
 } from './api'
 import { useLiveData } from './useLiveData'
-import type { ExchangeInfo, Settings } from './types'
+import type { ChartTarget, ExchangeInfo, Settings } from './types'
 import { Header } from './components/Header'
 import { SettingsDrawer } from './components/SettingsDrawer'
+import { ChartModal } from './components/ChartModal'
 import { CrossExchangeTable } from './components/CrossExchangeTable'
 import { BasisTable } from './components/BasisTable'
 import { FundingTable } from './components/FundingTable'
@@ -18,6 +19,8 @@ export default function App() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // null = закрыто; отдельного флага не нужно.
+  const [chartTarget, setChartTarget] = useState<ChartTarget | null>(null)
   const { snapshot, conn, refresh } = useLiveData(settings)
 
   // Список бирж — с сервера; настройки — свои для этого браузера,
@@ -71,6 +74,12 @@ export default function App() {
         />
       )}
 
+      <ChartModal
+        target={chartTarget}
+        names={names}
+        onClose={() => setChartTarget(null)}
+      />
+
       <div className="layout">
         <main className="content">
           {!snapshot && !loadError && (
@@ -83,6 +92,8 @@ export default function App() {
               rows={snapshot.spot}
               names={names}
               emptyHint="Нет расхождений выше порога. Понизьте «мин. спред» или добавьте бирж."
+              market="spot"
+              onRowClick={setChartTarget}
             />
           )}
 
@@ -92,15 +103,17 @@ export default function App() {
               rows={snapshot.perp}
               names={names}
               emptyHint="Нет расхождений по фьючерсам выше порога."
+              market="swap"
+              onRowClick={setChartTarget}
             />
           )}
 
           {settings?.track_basis && snapshot && (
-            <BasisTable rows={snapshot.basis} names={names} />
+            <BasisTable rows={snapshot.basis} names={names} onRowClick={setChartTarget} />
           )}
 
           {settings?.track_funding && snapshot && (
-            <FundingTable rows={snapshot.funding} names={names} />
+            <FundingTable rows={snapshot.funding} names={names} onRowClick={setChartTarget} />
           )}
 
           {errorEntries.length > 0 && (

@@ -1,12 +1,13 @@
-import type { FundingOpportunity } from '../types'
+import type { ChartTarget, FundingOpportunity } from '../types'
 import { fmtPct, spreadClass } from '../format'
 
 interface Props {
   rows: FundingOpportunity[]
   names: Record<string, string>
+  onRowClick?: (target: ChartTarget) => void
 }
 
-export function FundingTable({ rows, names }: Props) {
+export function FundingTable({ rows, names, onRowClick }: Props) {
   const name = (id: string) => names[id] ?? id
 
   return (
@@ -22,7 +23,7 @@ export function FundingTable({ rows, names }: Props) {
         </p>
       ) : (
         <div className="table-wrap">
-          <table className="table">
+          <table className={`table ${onRowClick ? 'table--clickable' : ''}`}>
             <thead>
               <tr>
                 <th>Пара</th>
@@ -35,8 +36,21 @@ export function FundingTable({ rows, names }: Props) {
             </thead>
             <tbody>
               {rows.map((o) => (
-                <tr key={o.symbol}>
-                  <td className="mono strong">{o.symbol}</td>
+                <tr
+                  key={o.symbol}
+                  onClick={() =>
+                    onRowClick?.({
+                      symbol: o.symbol,
+                      a: { exchange: o.long_exchange, market: 'swap' },
+                      b: { exchange: o.short_exchange, market: 'swap' },
+                    })
+                  }
+                >
+                  <td className="mono strong">
+                    <button type="button" className="cell-link">
+                      {o.symbol}
+                    </button>
+                  </td>
                   <td><span className="tag tag--buy">{name(o.long_exchange)}</span></td>
                   <td className="num mono">{fmtPct(o.long_rate, 4)}</td>
                   <td><span className="tag tag--sell">{name(o.short_exchange)}</span></td>

@@ -1,12 +1,13 @@
-import type { BasisOpportunity } from '../types'
+import type { BasisOpportunity, ChartTarget } from '../types'
 import { fmtPrice, spreadClass } from '../format'
 
 interface Props {
   rows: BasisOpportunity[]
   names: Record<string, string>
+  onRowClick?: (target: ChartTarget) => void
 }
 
-export function BasisTable({ rows, names }: Props) {
+export function BasisTable({ rows, names, onRowClick }: Props) {
   const name = (id: string) => names[id] ?? id
 
   return (
@@ -22,7 +23,7 @@ export function BasisTable({ rows, names }: Props) {
         </p>
       ) : (
         <div className="table-wrap">
-          <table className="table">
+          <table className={`table ${onRowClick ? 'table--clickable' : ''}`}>
             <thead>
               <tr>
                 <th>Пара</th>
@@ -37,8 +38,21 @@ export function BasisTable({ rows, names }: Props) {
               {rows.map((o) => {
                 const premium = o.direction === 'perp_premium'
                 return (
-                  <tr key={`${o.symbol}-${o.exchange}`}>
-                    <td className="mono strong">{o.symbol}</td>
+                  <tr
+                    key={`${o.symbol}-${o.exchange}`}
+                    onClick={() =>
+                      onRowClick?.({
+                        symbol: o.symbol,
+                        a: { exchange: o.exchange, market: 'spot' },
+                        b: { exchange: o.exchange, market: 'swap' },
+                      })
+                    }
+                  >
+                    <td className="mono strong">
+                      <button type="button" className="cell-link">
+                        {o.symbol}
+                      </button>
+                    </td>
                     <td><span className="tag tag--neutral">{name(o.exchange)}</span></td>
                     <td className="num mono">{fmtPrice(o.spot_price)}</td>
                     <td className="num mono">{fmtPrice(o.perp_price)}</td>

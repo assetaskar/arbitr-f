@@ -71,6 +71,36 @@ export interface Snapshot {
   errors: Record<string, string>
 }
 
+// --- График цен ---
+
+export type MarketType = 'spot' | 'swap'
+
+// Одна нога графика: чью цену рисуем.
+export interface ChartLeg {
+  exchange: string
+  market: MarketType
+}
+
+// Что открыть в модалке: пара и две ноги, которые сравнивает строка таблицы.
+export interface ChartTarget {
+  symbol: string
+  a: ChartLeg
+  b: ChartLeg
+}
+
+// [timestamp_ms, open, high, low, close, volume] — формат ccxt.
+export type Candle = [number, number, number, number, number, number]
+
+export interface CandlesResponse {
+  exchange: string
+  market: MarketType
+  symbol: string
+  timeframe: string
+  candles: Candle[]
+  // Биржа ответила отказом: запрос удался, данных нет. Не путать с сетевой ошибкой.
+  error: string | null
+}
+
 export interface ExchangeInfo {
   id: string
   name: string
